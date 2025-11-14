@@ -37,10 +37,11 @@ class LeadSeeder extends Seeder
         $dispatcher = $users->where('role', 'dispatcher')->first();
 
         // Sample lead data - creating 10 leads like in the local version
+        // Note: source must match ENUM values: 'website', 'referral', 'advertisement', 'cold_call', 'other'
         $leadData = [
             [
                 'client' => $clients->first(),
-                'source' => 'Website',
+                'source' => 'website',
                 'status' => 'contacted',
                 'priority' => 'low',
                 'estimated_value' => 1500.00,
@@ -49,7 +50,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Cold Call',
+                'source' => 'cold_call',
                 'status' => 'new',
                 'priority' => 'medium',
                 'estimated_value' => 1197.00,
@@ -58,7 +59,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Referral',
+                'source' => 'referral',
                 'status' => 'qualified',
                 'priority' => 'high',
                 'estimated_value' => 2500.00,
@@ -67,7 +68,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Email',
+                'source' => 'other', // Email maps to 'other'
                 'status' => 'contacted',
                 'priority' => 'medium',
                 'estimated_value' => 1800.00,
@@ -76,7 +77,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Advertisement',
+                'source' => 'advertisement',
                 'status' => 'new',
                 'priority' => 'urgent',
                 'estimated_value' => 4755.00,
@@ -85,7 +86,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Advertisement',
+                'source' => 'advertisement',
                 'status' => 'new',
                 'priority' => 'high',
                 'estimated_value' => 3869.00,
@@ -94,7 +95,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Social Media',
+                'source' => 'other', // Social Media maps to 'other'
                 'status' => 'contacted',
                 'priority' => 'low',
                 'estimated_value' => 950.00,
@@ -103,7 +104,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Website',
+                'source' => 'website',
                 'status' => 'quoted',
                 'priority' => 'medium',
                 'estimated_value' => 2200.00,
@@ -112,7 +113,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Referral',
+                'source' => 'referral',
                 'status' => 'qualified',
                 'priority' => 'high',
                 'estimated_value' => 3200.00,
@@ -121,7 +122,7 @@ class LeadSeeder extends Seeder
             ],
             [
                 'client' => $clients->first(),
-                'source' => 'Cold Call',
+                'source' => 'cold_call',
                 'status' => 'new',
                 'priority' => 'medium',
                 'estimated_value' => 1500.00,
@@ -144,7 +145,7 @@ class LeadSeeder extends Seeder
                 'priority' => $data['priority'],
                 'estimated_value' => $data['estimated_value'],
                 'assigned_to' => $data['assigned_to'],
-                'notes' => "Demo lead created from {$data['source']}",
+                'notes' => "Demo lead created from " . ucfirst(str_replace('_', ' ', $data['source'])),
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
             ]);
@@ -155,9 +156,9 @@ class LeadSeeder extends Seeder
                 'lead_id' => $lead->id,
                 'user_id' => $data['assigned_to'],
                 'type' => 'created',
-                'description' => "Lead created from {$data['source']}",
+                'description' => "Lead created from " . ucfirst(str_replace('_', ' ', $data['source'])),
                 'metadata' => [
-                    'source' => $data['source'],
+                    'source' => ucfirst(str_replace('_', ' ', $data['source'])),
                     'status' => $data['status'],
                     'priority' => $data['priority'],
                 ],
