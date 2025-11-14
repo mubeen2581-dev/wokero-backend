@@ -1,0 +1,21 @@
+{
+  "name": "workero-backend",
+  "version": "1.0.0",
+  "description": "Workero Backend API - Laravel PHP application",
+  "scripts": {
+    "dev": "php artisan serve --host=0.0.0.0 --port=3001",
+    "start": "php artisan serve --host=0.0.0.0 --port=3001",
+    "build": "php artisan route:cache && php artisan event:cache && composer dump-autoload --optimize --classmap-authoritative",
+    "build:full": "powershell -ExecutionPolicy Bypass -File build.ps1",
+    "build:linux": "bash build.sh",
+    "optimize": "php artisan config:cache && php artisan route:cache && php artisan event:cache",
+    "clear": "php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear",
+    "test": "php artisan test",
+    "migrate": "php artisan migrate",
+    "migrate:fresh": "php artisan migrate:fresh --seed",
+    "seed": "php artisan db:seed",
+    "key:generate": "php artisan key:generate",
+    "jwt:secret": "php artisan jwt:secret"
+  }
+}
+
