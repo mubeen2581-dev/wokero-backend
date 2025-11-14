@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\LeadController;
 
 Route::get('/', function () {
     return response()->json([
@@ -62,6 +63,20 @@ Route::middleware(['auth.jwt'])->group(function () {
         Route::get('/{id}', [SupplierController::class, 'show']);
         Route::put('/{id}', [SupplierController::class, 'update']);
         Route::delete('/{id}', [SupplierController::class, 'destroy']);
+    });
+    
+    // Lead routes (Admin/Manager/Dispatcher can manage CRM)
+    Route::prefix('leads')->middleware('role:admin,manager,dispatcher')->group(function () {
+        Route::get('/', [LeadController::class, 'index']);
+        Route::post('/', [LeadController::class, 'store']);
+        Route::get('/workloads', [LeadController::class, 'workloads']); // Must be before /{id} routes
+        Route::post('/distribute', [LeadController::class, 'distribute']); // Must be before /{id} routes
+        Route::get('/{id}', [LeadController::class, 'show']);
+        Route::put('/{id}', [LeadController::class, 'update']);
+        Route::delete('/{id}', [LeadController::class, 'destroy']);
+        Route::get('/{id}/activities', [LeadController::class, 'activities']);
+        Route::post('/{id}/status', [LeadController::class, 'updateStatus']);
+        Route::post('/{id}/assign', [LeadController::class, 'assign']);
     });
 });
 
