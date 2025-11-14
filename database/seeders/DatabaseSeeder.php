@@ -10,6 +10,7 @@ use App\Models\Client;
 use Database\Seeders\QuoteSeeder;
 use Database\Seeders\JobSeeder;
 use Database\Seeders\LeadSeeder;
+use Database\Seeders\InventorySeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -163,6 +164,9 @@ class DatabaseSeeder extends Seeder
         
         // Seed jobs
         $this->call(JobSeeder::class);
+        
+        // Seed inventory (warehouses, items, suppliers)
+        $this->call(InventorySeeder::class);
     }
 }
 
