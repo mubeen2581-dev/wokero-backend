@@ -8,6 +8,8 @@ use App\Models\Company;
 use App\Models\Warehouse;
 use App\Models\InventoryItem;
 use App\Models\Supplier;
+use App\Models\StockMovement;
+use App\Models\User;
 use Carbon\Carbon;
 
 class InventorySeeder extends Seeder
@@ -327,9 +329,10 @@ class InventorySeeder extends Seeder
         ];
 
         $createdCount = 0;
+        $createdItems = [];
 
         foreach ($inventoryData as $data) {
-            InventoryItem::firstOrCreate(
+            $item = InventoryItem::firstOrCreate(
                 [
                     'company_id' => $company->id,
                     'sku' => $data['sku'],
@@ -340,7 +343,79 @@ class InventorySeeder extends Seeder
                     'last_audit_date' => Carbon::now()->subMonths(1),
                 ])
             );
+            $createdItems[] = $item;
             $createdCount++;
+        }
+
+        // Get admin user for performed_by
+        $adminUser = User::where('company_id', $company->id)
+            ->where('email', 'admin@workero.com')
+            ->first();
+
+        if (!$adminUser) {
+            // Fallback to any user in the company
+            $adminUser = User::where('company_id', $company->id)->first();
+        }
+
+        // Create sample stock movements
+        if ($adminUser && count($createdItems) > 0) {
+            $movementReasons = [
+                'in' => ['Stock received from supplier', 'Initial stock entry', 'Return from job', 'Stock adjustment'],
+                'out' => ['Issued to job', 'Stock adjustment', 'Damaged items removed', 'Returned to supplier'],
+                'transfer' => ['Transfer between warehouses', 'Stock relocation', 'Warehouse reorganization'],
+            ];
+
+            // Create movements for the last 7 days
+            $movementCount = 0;
+            foreach ($createdItems as $index => $item) {
+                // Create 1-3 movements per item
+                $numMovements = rand(1, 3);
+                
+                for ($i = 0; $i < $numMovements; $i++) {
+                    $type = ['in', 'out', 'transfer'][rand(0, 2)];
+                    $daysAgo = rand(0, 7);
+                    $performedAt = Carbon::now()->subDays($daysAgo)->subHours(rand(0, 23));
+                    
+                    $quantity = match($type) {
+                        'in' => rand(10, 100),
+                        'out' => rand(5, min(50, $item->current_stock)),
+                        'transfer' => rand(5, min(30, $item->current_stock)),
+                    };
+                    
+                    $reason = $movementReasons[$type][array_rand($movementReasons[$type])];
+                    
+                    $fromLocation = null;
+                    $toLocation = null;
+                    
+                    if ($type === 'in') {
+                        $toLocation = $item->location ?? 'Main Warehouse';
+                    } elseif ($type === 'out') {
+                        $fromLocation = $item->location ?? 'Main Warehouse';
+                        $toLocation = 'Job-' . Str::random(8);
+                    } else { // transfer
+                        $fromLocation = $warehouse1->name;
+                        $toLocation = $warehouse2->name;
+                    }
+                    
+                    StockMovement::create([
+                        'id' => Str::uuid(),
+                        'company_id' => $company->id,
+                        'item_id' => $item->id,
+                        'type' => $type,
+                        'quantity' => $quantity,
+                        'from_location' => $fromLocation,
+                        'to_location' => $toLocation,
+                        'reason' => $reason,
+                        'performed_by' => $adminUser->id,
+                        'performed_at' => $performedAt,
+                        'notes' => rand(0, 1) ? 'Demo stock movement for testing' : null,
+                    ]);
+                    
+                    $movementCount++;
+                }
+            }
+            
+            $this->command->info("Created {$movementCount} stock movements successfully!");
         }
 
         $this->command->info("Created {$createdCount} inventory items successfully!");
